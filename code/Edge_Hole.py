@@ -49,12 +49,93 @@ def count_near_circles(centri, centro_riferimento, raggio):
 
     return count
 
+#no back
+img2 = cv.imread("../Photo/front_tray.jpeg")
+output2 = img2.copy()
+
+gray2 = cv.cvtColor(img2, cv.COLOR_BGR2GRAY)
+blur2 = cv.GaussianBlur(gray2,(7,7),0)
+
+# -----------------------
+# threshold
+# -----------------------
+
+_,thresh = cv.threshold(
+    blur2,
+    0,
+    255,
+    cv.THRESH_BINARY_INV + cv.THRESH_OTSU
+)
+
+# -----------------------
+# floodfill per riempire buchi
+# -----------------------
+
+h,w = thresh.shape
+mask = np.zeros((h+2,w+2),np.uint8)
+
+flood = thresh.copy()
+cv.floodFill(flood,mask,(0,0),255)
+
+flood_inv = cv.bitwise_not(flood)
+tray_mask = thresh | flood_inv
+
+# -----------------------
+# chiude bordo dentato
+# -----------------------
+
+kernel = np.ones((25,25),np.uint8)
+
+tray_mask = cv.morphologyEx(
+    tray_mask,
+    cv.MORPH_CLOSE,
+    kernel
+)
+
+# -----------------------
+# trova contorno tray
+# -----------------------
+
+contours,_ = cv.findContours(
+    tray_mask,
+    cv.RETR_EXTERNAL,
+    cv.CHAIN_APPROX_SIMPLE
+)
+
+largest = max(contours, key=cv.contourArea)
+
+rect = cv.minAreaRect(largest)
+box = cv.boxPoints(rect)
+box = np.intp(box)
+
+cv.drawContours(output2,[box],0,(0,255,0),4)
+
+# -----------------------
+# crop tray
+# -----------------------
+
+x,y,w,h = cv.boundingRect(largest)
+
+# margine per ridurre il cropping aggressivo
+margin = 30
+
+x = max(0, x + margin)
+y = max(0, y + margin)
+w = min(img2.shape[1] - x, w + 2*margin)
+h = min(img2.shape[0] - y, h + 2*margin)
+
+tray = img2[y:y+h, x:x+w]
+cv.imshow("tray", tray)
+
+#blank = np.zeros_like(gray2)
+#mask = cv.rectangle(blank, (box[0][0], box[0][1]), (box[2][0], box[2][1]), 255, -1)
+#tray_mask = cv.bitwise_and(img2, img2, mask=mask)
 
 
 
 
 #img = rescale(cv.imread("../Photo/cestello.jpg"))
-img = cv.imread("../Photo/front_tray.jpeg")
+img = tray
 output = img.copy()
 blank2=np.zeros((700,700), np.uint8)
 
