@@ -295,8 +295,8 @@ try:
                 
                 results2=ordina_punti_matrice(results2,20)
                 if len(results2) > 6:
-                    pendenza=calcola_rotazione(results2[1],results2[6])
-                    print(f"questi sono i punti che utilizzo per calcolare la pendenza -> {results2[1]} e {results2[6]}")
+                    pendenza=calcola_rotazione(results2[0],results2[3])
+                    print(f"questi sono i punti che utilizzo per calcolare la pendenza -> {results2[0]} e {results2[3]}")
                     print(f"beccati la pendenza {pendenza}")
                     cv2.putText(
                         output,
