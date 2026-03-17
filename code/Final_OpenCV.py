@@ -20,7 +20,7 @@ BLUR_KERNEL = (9, 9)
 
 CIRCLE_MIN_DIST = 60
 CIRCLE_PARAM1 = 90
-CIRCLE_PARAM2 = 26
+CIRCLE_PARAM2 = 20
 CIRCLE_MIN_RADIUS = 30
 CIRCLE_MAX_RADIUS = 38
 
@@ -397,9 +397,30 @@ try:
             detected_points = []
 
             for x, y, r in circles:
+
+                # ignora cerchi fuori dal tray
+                if tray is not None:
+                    inside = cv2.pointPolygonTest(tray.astype(np.int32), (int(x), int(y)), False)
+
+                    if inside < 0:
+                        continue
+                    
                 detected_points.append((int(x), int(y)))
 
-            points = [(int(c[0]), int(c[1])) for c in circles]
+            points = []
+
+            for c in circles:
+            
+                x, y = int(c[0]), int(c[1])
+
+                if tray is not None:
+                    inside = cv2.pointPolygonTest(tray.astype(np.int32), (x, y), False)
+
+                    if inside < 0:
+                        continue
+                    
+                points.append((x, y))
+                
             grid = ordina_griglia_reale(points)
 
             for gx, gy in grid:
